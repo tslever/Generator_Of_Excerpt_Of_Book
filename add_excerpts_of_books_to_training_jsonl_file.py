@@ -38,7 +38,7 @@ def split_text_file(path_to_file):
     return temp_dir
 
 
-def iterate_over_sublists(input_list, sublist_size = 2048):
+def iterate_over_sublists(input_list, sublist_size):
     for i in range(0, len(input_list), sublist_size):
         sublist = input_list[i:i + sublist_size]
         yield sublist
@@ -48,7 +48,13 @@ def append_to_training_JSON_file(path_to_file):
     temp_dir = split_text_file(path_to_file)
     list_of_chunk_files = [os.path.join(temp_dir, file) for file in os.listdir(temp_dir) if file.startswith("chunk")]
 
-    for sublist in iterate_over_sublists(list_of_chunk_files):
+    maximum_number_of_messages_per_line = 2048
+    number_of_system_messages_per_line = 1
+    number_of_messages_per_chunk = 2
+    number_of_chunks_per_sublist = int(
+        (maximum_number_of_messages_per_line - number_of_system_messages_per_line) / number_of_messages_per_chunk
+    )
+    for sublist in iterate_over_sublists(list_of_chunk_files, number_of_chunks_per_sublist):
         messages = [
             {"role": "system", "content": "You, the model, are a novelist who produces chunks of novels each with 550 characters."}
         ]
